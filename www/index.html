@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> Express app </title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style> 
+      body {
+	  background-color: #f1f1f1;
+      }
+      
+      .center {
+	  display: table;
+	  margin: 0 auto;
+      }
+      
+      
+      input {
+	  max-width: 200px;
+	  margin: 5px;
+      }
+      
+      input[type=email], input[type=password] {
+	  padding: 12px 20px;
+	  border: 1px solid #ccc; 
+      }
+      
+      #loginSubmit { 
+	  border-radius: 2px;
+	  background-color: #4CAF50;
+	  color: white;
+	  padding: 8px 20px;
+	  border: none;  
+      }
+      
+      .hide {
+	  display: none !important;
+      }
+      .show {
+	  display: block !important;
+      }
+      #ajaxResponse {
+	  display: none;
+	  margin-top: 10px;
+	  font-weight: 550;
+      }
+    </style>
+  </head>
+  <body>
+    <div  class="center">
+      <input id="loginEmail" type="email" placeholder="Email" class="center" />
+      <br/>
+      <input id="loginPassword" type="password" placeholder="Password" class="center"  />
+      <br/>  
+      <div  id="loginSubmit" class="center">Login</div>
+      <div id="ajaxResponse">
+	<span id="responseType"> Response type (Error/Success) </span>
+	<br/>
+	<span id="responseData"> Response data</span>
+      </div>
+    </div>
+</div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"> </script>
+<script>
+
+  function writeError(text) {
+	  $("#ajaxResponse").addClass("show");
+	  $("#responseType").html("An error occured: ");
+	  $("#responseData").html(text);
+  }
+  
+  function handleResponse(res) {
+      $("#ajaxResponse").addClass("show");
+      if (!res.ok) {
+	  writeError(res.error)
+      }
+      else {
+	  const secretLink = res.data.secret ?
+		`Your secret <a href="/kittens?secret=${res.data.secret}">link</a>`:
+		"Unfortunately you don't have a permission to visit the secret page"
+	  
+	  $("#responseType").html(`Successfully identified as ${res.data.name} `);
+	  $("#responseData").html(secretLink);
+	  $("input").css({display:"none"});
+	  $("#loginSubmit").css({display:"none"});
+      }
+  }
+  $("#loginSubmit").click((e) => {
+      const reqEmail   = $("#loginEmail").val();
+      const reqPassword = $("#loginPassword").val();
+      if (!reqEmail.length || !reqPassword.length) {
+	  writeError("Please fill all required fields");
+      } else {
+	  $.ajax({
+	      url: "/login",
+	      method: "POST",
+	      data: JSON.stringify({"email": reqEmail, "password": reqPassword}),
+	      dataType: 'json',
+	      contentType: "application/json",
+	  }).done(handleResponse);
+      }
+  });
+</script>
+</html>
